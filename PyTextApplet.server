@@ -1,0 +1,24 @@
+<oaf_info>
+
+    <oaf_server iid="OAFIID:GNOME_PyTextApplet_Factory" type="exe" location="/home/xin/Projects/PyTextApplet/PyTextApplet.py">
+        <oaf_attribute name="repo_ids" type="stringv">
+            <item value="IDL:Bonobo/GenericFactory:1.0"/>
+            <item value="IDL:Bonobo/Unknown:1.0"/>
+        </oaf_attribute>
+        <oaf_attribute name="name" type="string" value="PyTextApplet"/>
+        <oaf_attribute name="description" type="string" value="A gnome applet to render text to a panel."/>
+    </oaf_server>
+
+    <oaf_server iid="OAFIID:GNOME_PyTextApplet" type="factory" location="OAFIID:GNOME_PyTextApplet_Factory">
+        <oaf_attribute name="repo_ids" type="stringv">
+            <item value="IDL:GNOME/Vertigo/PanelAppletShell:1.0"/>
+            <item value="IDL:Bonobo/Control:1.0"/>
+            <item value="IDL:Bonobo/Unknown:1.0"/>
+        </oaf_attribute>
+        <oaf_attribute name="name" type="string" value="PyTextApplet"/>
+        <oaf_attribute name="description" type="string" value="A gnome applet to render text to a panel."/>
+        <oaf_attribute name="panel:category" type="string" value="Utility"/>
+        <oaf_attribute name="panel:icon" type="string" value="computer.png"/>
+    </oaf_server>
+
+</oaf_info>
