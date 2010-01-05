@@ -1,0 +1,25 @@
+<gconfschemafile>
+    <schemalist>
+        <schema>
+            <key>/schemas/apps/pytextapplet/prefs/plugin_module</key>
+            <owner>pytextapplet</owner>
+            <type>string</type>
+            <default>PyTextApplet</default>
+            <locale name="C">
+                <short>Plugin Module Name</short>
+                <long>Python module name containing the plugin</long>
+            </locale>
+        </schema>
+        
+        <schema>
+            <key>/schemas/apps/pytextapplet/prefs/plugin_class</key>
+            <owner>pytextapplet</owner>
+            <type>string</type>
+            <default>TextGetter</default>
+            <locale name="C">
+                <short>Plugin class Name</short>
+                <long>Python class name containing the plugin</long>
+            </locale>
+        </schema>
+    </schemalist>
+</gconfschemafile>

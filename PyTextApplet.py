@@ -3,15 +3,17 @@
 from datetime import datetime, timedelta
 
 class TextGetter(object):
-    def __init__(self, force_update):
+    def __init__(self, force_update, text):
         self.timeout_val = 1000
         self.force_update = force_update
+        self.text = text
 
     def text(self):
         """
         Can return pango-markup text
         http://library.gnome.org/devel/pango/stable/PangoMarkupFormat.html
         """
+        return self.text
         return "<span size='smaller'>The time is:\n%s</span>" % datetime.now()
 
     def timeout(self):
@@ -41,6 +43,7 @@ import gtk
 import gtk.glade
 
 import gnome
+import gconf
 import gobject
 import gnomeapplet
 
@@ -66,16 +69,25 @@ class DialogWrapper(object):
     def destroy(self, *args, **kwargs):
         self.dialog.destroy()
 
+class Config(object):
+    def __init__(self, applet):
+        self.applet = applet
+
+        self.applet.add_preferences('/schemas/apps/pytextapplet/prefs/')
+        print 'Pref key: ', self.applet.get_preferences_key()
+
 class PyTextApplet(object):
     def __init__(self, applet, iid):
         gnome.init('sample', '1.0')
         self.applet = applet
         applet.connect("destroy", self.cleanup)
 
+        self.config = Config(self.applet)
+
         self.build_applet(applet)
         self.build_menu(applet)
         
-        self.tg = TextGetter(self.force_update)
+        self.tg = TextGetter(self.force_update, self.applet.get_preferences_key())
 
         self.applet.connect("button-press-event", self.on_click)
 
@@ -83,8 +95,6 @@ class PyTextApplet(object):
         self.update()
 
         applet.show_all()
-
-        print self.applet.get_preferences_key()
 
     def build_applet(self, applet):
         self.label = gtk.Label("")
