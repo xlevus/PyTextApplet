@@ -15,10 +15,16 @@ class TextGetter(object):
         return "<span size='smaller'>The time is:\n%s</span>" % datetime.now()
 
     def timeout(self):
+        """
+        The time in milliseconds until the next call to text() and icon().
+        """
         return self.timeout_val
 
     def icon(self):
-        return "/home/xin/Dropbox/Projects/TextPanel/icon.png"
+        """
+        Returns the path to an icon or None if not needed.
+        """
+        return "/home/xin/Projects/PyTextApplet/icon.png"
 
     def on_click(self):
         logging.debug("Forcing update")
@@ -40,7 +46,27 @@ import gnomeapplet
 
 logging.basicConfig(level=logging.DEBUG)
 
-class TextPanel(object):
+class DialogWrapper(object):
+    def __init__(self, glade_file, dialog_name):
+        self.dialog_name = dialog_name
+        self.wT = gtk.glade.XML(glade_file)
+        self.dialog = self.wT.get_widget(dialog_name)
+        self.wT.signal_autoconnect(self)
+
+    def __getattr__(self, name):
+        """ DEBUG """
+        print "GETATTR: %s" % name
+        def func(self, *args, **kwargs):
+            logging.debug("Dialog %s called %s with args %s %s" % (self.dialog_name, name, args, kwargs))
+        return func
+    
+    def show(self):
+        self.dialog.show()
+    
+    def destroy(self, *args, **kwargs):
+        self.dialog.destroy()
+
+class PyTextApplet(object):
     def __init__(self, applet, iid):
         gnome.init('sample', '1.0')
         self.applet = applet
@@ -55,8 +81,10 @@ class TextPanel(object):
 
         self.timeout = None
         self.update()
-    
+
         applet.show_all()
+
+        print self.applet.get_preferences_key()
 
     def build_applet(self, applet):
         self.label = gtk.Label("")
@@ -70,9 +98,6 @@ class TextPanel(object):
 
         applet.add(self.hbox)
         applet.resize_children()
-        print 'bg', applet.get_background()
-        #applet.add(self.label)
-
 
     def build_menu(self, applet):
         xml = """
@@ -91,15 +116,18 @@ class TextPanel(object):
             </popup>
         """
         verbs = [
+            ('Preferences', self.show_preferences),
             ('About', self.show_about),
         ]
         applet.setup_menu(xml, verbs, None)
 
     def show_about(self, *args):
-        wT = gtk.glade.XML("TextPanel.glade")
-        dialog = wT.get_widget("aboutDialog")
-        dialog.show()
-        wT.signal_autoconnect(self)
+        about = DialogWrapper("PyTextApplet.glade", "aboutDialog")
+        about.show()
+
+    def show_preferences(self, *args):
+        prefs = DialogWrapper("PyTextApplet.glade", "preferencesDialog")
+        prefs.show()
 
     def update(self, forced=False):
         self.label.set_label(self.tg.text())
@@ -107,6 +135,7 @@ class TextPanel(object):
         icon = self.tg.icon()
         if icon:
             self.icon.set_from_file(icon)
+            self.icon.set_pixel_size(gnomeapplet.SIZE_X_SMALL)
 
         new_timeout = self.tg.timeout()
         if not forced and self.timeout != new_timeout:
@@ -130,25 +159,25 @@ class TextPanel(object):
     def cleanup(self):
         del self.applet
 
-def TextPanelFactory(applet, iid):
-    tp = TextPanel(applet, iid)
+def PyTextAppletFactory(applet, iid):
+    tp = PyTextApplet(applet, iid)
     applet.set_background_widget(applet)
     return gtk.TRUE
 
 if len(sys.argv) > 1 and sys.argv[1] == 'run-in-window':
     main_window = gtk.Window(gtk.WINDOW_TOPLEVEL)
     main_window.set_title("Text Applet")
-    main_window.connect("destroy", gtk.mainquit) 
+    main_window.connect("destroy", gtk.main_quit) 
     app = gnomeapplet.Applet()
-    TextPanelFactory(app, None)
+    PyTextAppletFactory(app, None)
     app.reparent(main_window)
     main_window.show_all()
     gtk.main()
 
 if __name__ == '__main__':
     gnomeapplet.bonobo_factory(
-            "OAFIID:GNOME_PyTextPanel_Factory",
+            "OAFIID:GNOME_PyTextApplet_Factory",
             gnomeapplet.Applet.__gtype__, 
-            "PyTextPanel", "0", TextPanelFactory
+            "PyTextApplet", "0", PyTextAppletFactory
     )
 
